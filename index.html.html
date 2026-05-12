@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Gelephu Mindfulness City — GMC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+  /* ─── DESIGN TOKENS ─── */
+  :root {
+    --bg: #050a0f;
+    --bg2: #070d14;
+    --teal: #00f2ff;
+    --teal-dim: rgba(0,242,255,0.15);
+    --teal-glow: rgba(0,242,255,0.35);
+    --gold: #ffcc33;
+    --gold-dim: rgba(255,204,51,0.12);
+    --gold-glow: rgba(255,204,51,0.4);
+    --white: #e8f4f8;
+    --muted: #6a8fa8;
+    --glass: rgba(10,25,40,0.55);
+    --glass-border: rgba(0,242,255,0.18);
+    --radius: 16px;
+    --font-display: 'Cinzel Decorative', serif;
+    --font-body: 'Cormorant Garamond', serif;
+    --font-mono: 'Share Tech Mono', monospace;
+  }
+
+  /* ─── RESET & BASE ─── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 18px;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ─── CUSTOM CURSOR ─── */
+  #cursor {
+    position: fixed;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--teal);
+    box-shadow: 0 0 18px 6px var(--teal-glow), 0 0 40px 12px rgba(0,242,255,0.15);
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%,-50%);
+    transition: transform 0.08s ease, width 0.2s, height 0.2s, opacity 0.2s;
+    mix-blend-mode: screen;
+  }
+  #cursor-ring {
+    position: fixed;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(0,242,255,0.45);
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%,-50%);
+    transition: transform 0.22s cubic-bezier(.25,.46,.45,.94), width 0.25s, height 0.25s, opacity 0.25s;
+  }
+  body:hover #cursor { opacity: 1; }
+
+  /* ─── MESH GRADIENT BACKGROUND ─── */
+  #mesh-bg {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 10% 20%, rgba(0,80,120,0.22) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 90% 80%, rgba(255,160,0,0.07) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 70% at 50% 50%, rgba(0,242,255,0.04) 0%, transparent 70%),
+      var(--bg);
+    pointer-events: none;
+  }
+
+  /* ─── STAR FIELD ─── */
+  #stars { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+
+  /* ─── NOISE GRAIN ─── */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 2;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.038'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  /* ─── LAYOUT WRAPPER ─── */
+  .page { position: relative; z-index: 3; }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 5vw;
+    background: rgba(5,10,15,0.7);
+    backdrop-filter: blur(18px) saturate(1.4);
+    border-bottom: 1px solid rgba(0,242,255,0.1);
+    transition: background 0.4s;
+  }
+  .nav-logo {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--teal);
+    letter-spacing: 0.25em;
+    text-decoration: none;
+    text-shadow: 0 0 20px var(--teal-glow);
+  }
+  .nav-links { display: flex; gap: 2.2rem; list-style: none; }
+  .nav-links a {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.25s, text-shadow 0.25s;
+  }
+  .nav-links a:hover { color: var(--teal); text-shadow: 0 0 12px var(--teal-glow); }
+
+  /* ─── HERO ─── */
+  #hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 120px 5vw 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-emblem {
+    width: 90px; height: 90px;
+    margin-bottom: 2rem;
+    opacity: 0.92;
+    filter: drop-shadow(0 0 22px var(--gold-glow));
+  }
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.38em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 1.6rem;
+    opacity: 0.85;
+  }
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.4rem, 7vw, 6.2rem);
+    font-weight: 900;
+    line-height: 1.08;
+    letter-spacing: 0.06em;
+    background: linear-gradient(135deg, #ffffff 30%, var(--teal) 65%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 38px rgba(0,242,255,0.28));
+    animation: breathe 5s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%,100% { letter-spacing: 0.06em; filter: drop-shadow(0 0 38px rgba(0,242,255,0.28)); }
+    50% { letter-spacing: 0.12em; filter: drop-shadow(0 0 60px rgba(0,242,255,0.5)); }
+  }
+  .hero-sub {
+    margin-top: 1.8rem;
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: clamp(1.1rem, 2.5vw, 1.55rem);
+    color: rgba(232,244,248,0.65);
+    letter-spacing: 0.04em;
+    max-width: 680px;
+  }
+  .hero-sub span { color: var(--gold); font-style: normal; font-weight: 600; }
+  .hero-cta {
+    margin-top: 3rem;
+    display: inline-block;
+    padding: 14px 42px;
+    border: 1.5px solid var(--teal);
+    color: var(--teal);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 60px;
+    background: var(--teal-dim);
+    backdrop-filter: blur(8px);
+    transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+    box-shadow: 0 0 0 0 var(--teal-glow);
+  }
+  .hero-cta:hover {
+    background: rgba(0,242,255,0.25);
+    box-shadow: 0 0 32px 4px var(--teal-glow);
+    transform: translateY(-2px);
+  }
+  /* Scroll indicator */
+  .scroll-hint {
+    position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted);
+    letter-spacing: 0.2em; text-transform: uppercase;
+    animation: fadeInUp 1.5s 1.5s both;
+  }
+  .scroll-hint svg { animation: bounce 2s infinite; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)}50%{transform:translateY(6px)} }
+  @keyframes fadeInUp { from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translate(-50%,0)} }
+
+  /* ─── SECTION SHARED ─── */
+  section { padding: 100px 5vw; position: relative; }
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.35em;
+    color: var(--teal);
+    text-transform: uppercase;
+    margin-bottom: 0.7rem;
+    opacity: 0.8;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 4vw, 3rem);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.15;
+  }
+  .section-title .gold { color: var(--gold); }
+  .section-desc {
+    font-family: var(--font-body);
+    font-size: 1.1rem;
+    color: rgba(232,244,248,0.6);
+    max-width: 620px;
+    line-height: 1.8;
+    margin-bottom: 3.5rem;
+  }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    width: 100%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--teal-glow), transparent);
+    margin: 0;
+  }
+
+  /* ─── LANDMARK CARDS ─── */
+  #landmarks { background: var(--bg2); }
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+  }
+  .card {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(12px);
+    transition: transform 0.35s cubic-bezier(.25,.46,.45,.94), box-shadow 0.35s;
+    cursor: none;
+  }
+  .card:hover {
+    transform: translateY(-10px) scale(1.025);
+    box-shadow: 0 0 0 1.5px var(--teal), 0 20px 60px rgba(0,242,255,0.2), 0 6px 20px rgba(0,0,0,0.5);
+  }
+  .card-img-wrap {
+    width: 100%; height: 220px; overflow: hidden; position: relative;
+  }
+  .card-img-wrap img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.5s cubic-bezier(.25,.46,.45,.94), filter 0.35s;
+    filter: brightness(0.88) saturate(1.1);
+  }
+  .card:hover .card-img-wrap img {
+    transform: scale(1.09);
+    filter: brightness(1) saturate(1.25);
+  }
+  .card-img-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(5,10,15,0.85) 0%, transparent 60%);
+  }
+  .card-badge {
+    position: absolute; top: 14px; left: 14px;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    color: var(--teal);
+    background: rgba(5,10,15,0.7);
+    border: 1px solid rgba(0,242,255,0.3);
+    padding: 4px 10px;
+    border-radius: 40px;
+    backdrop-filter: blur(6px);
+  }
+  .card-body { padding: 22px 24px 26px; }
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 0.55rem;
+    line-height: 1.3;
+  }
+  .card-desc {
+    font-family: var(--font-body);
+    font-size: 0.98rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .card-line {
+    width: 36px; height: 2px;
+    background: linear-gradient(90deg, var(--teal), var(--gold));
+    border-radius: 2px;
+    margin-bottom: 12px;
+    transition: width 0.35s;
+  }
+  .card:hover .card-line { width: 64px; }
+
+  /* ─── ZHABTOG / VOLUNTEERS ─── */
+  #zhabtog { position: relative; }
+  .zhabtog-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  .zhabtog-text .big-number {
+    font-family: var(--font-display);
+    font-size: clamp(5rem, 12vw, 9rem);
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(0,242,255,0.2);
+    line-height: 0.9;
+    margin-bottom: -1rem;
+    pointer-events: none;
+    user-select: none;
+  }
+  .zhabtog-cards {
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .mini-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    backdrop-filter: blur(10px);
+    transition: border-color 0.3s, box-shadow 0.3s, transform 0.25s;
+  }
+  .mini-card:hover {
+    border-color: rgba(0,242,255,0.45);
+    box-shadow: 0 0 24px rgba(0,242,255,0.12);
+    transform: translateX(6px);
+  }
+  .mini-card-icon {
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .mini-card h3 {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: var(--teal);
+    margin-bottom: 6px;
+  }
+  .mini-card p {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  /* ─── PLANNERS ─── */
+  #planners { background: var(--bg2); }
+  .planners-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+  .planner-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    padding: 36px 32px;
+    backdrop-filter: blur(14px);
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.35s, transform 0.3s;
+  }
+  .planner-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0.6;
+    transition: opacity 0.3s;
+  }
+  .planner-card:hover { box-shadow: 0 0 40px rgba(255,204,51,0.1); transform: translateY(-5px); }
+  .planner-card:hover::before { opacity: 1; }
+  .planner-icon {
+    width: 52px; height: 52px;
+    border-radius: 12px;
+    background: var(--gold-dim);
+    border: 1px solid rgba(255,204,51,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+  }
+  .planner-card h3 {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .planner-card p {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--muted);
+    line-height: 1.75;
+  }
+  .planner-tag {
+    display: inline-block;
+    margin-top: 16px;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    border: 1px solid rgba(255,204,51,0.3);
+    padding: 4px 12px;
+    border-radius: 40px;
+    background: var(--gold-dim);
+  }
+
+  /* ─── VISION QUOTE ─── */
+  #vision {
+    text-align: center;
+    padding: 120px 5vw;
+  }
+  .quote-wrap {
+    max-width: 860px; margin: 0 auto;
+    position: relative;
+  }
+  .quote-mark {
+    font-family: var(--font-display);
+    font-size: 8rem;
+    color: var(--teal);
+    opacity: 0.08;
+    line-height: 0.6;
+    position: absolute;
+    top: -10px; left: -10px;
+    user-select: none;
+  }
+  blockquote {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: clamp(1.25rem, 2.8vw, 1.95rem);
+    line-height: 1.7;
+    color: rgba(232,244,248,0.82);
+    padding: 0 3rem;
+    position: relative;
+  }
+  blockquote cite {
+    display: block;
+    margin-top: 1.5rem;
+    font-style: normal;
+    font-size: 0.88rem;
+    font-family: var(--font-mono);
+    color: var(--gold);
+    letter-spacing: 0.12em;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid rgba(0,242,255,0.08);
+    padding: 60px 5vw 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 24px;
+    background: rgba(5,10,15,0.95);
+  }
+  .footer-logo {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: var(--teal);
+    text-shadow: 0 0 22px var(--teal-glow);
+  }
+  .footer-credits {
+    text-align: right;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .footer-credits strong { color: var(--gold); }
+  .footer-copy {
+    width: 100%;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: rgba(106,143,168,0.4);
+    letter-spacing: 0.12em;
+    margin-top: 24px;
+  }
+
+  /* ─── SCROLL REVEAL CLASSES ─── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(48px);
+    transition: opacity 0.75s cubic-bezier(.25,.46,.45,.94), transform 0.75s cubic-bezier(.25,.46,.45,.94);
+  }
+  .reveal.zoom-in { transform: scale(0.9) translateY(30px); }
+  .reveal.slide-left { transform: translateX(-50px); }
+  .reveal.slide-right { transform: translateX(50px); }
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+
+  /* ─── SVG ANIMATED ORNAMENT ─── */
+  .ornament-svg { display: block; margin: 0 auto 2.5rem; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .zhabtog-grid, .planners-row { grid-template-columns: 1fr; }
+    blockquote { padding: 0 1rem; }
+    .footer-credits { text-align: left; }
+    .hero-title { letter-spacing: 0.02em; }
+  }
+  @media (max-width: 480px) {
+    .cards-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ─── TEAL SCAN LINE ─── */
+  .scan-line {
+    position: fixed; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--teal) 50%, transparent 100%);
+    opacity: 0.4;
+    z-index: 500;
+    animation: scan 8s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes scan {
+    0% { top: 0; opacity: 0.4; }
+    90% { opacity: 0.4; }
+    100% { top: 100vh; opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── ATMOSPHERIC LAYERS ── -->
+<div id="mesh-bg"></div>
+<canvas id="stars"></canvas>
+<div class="scan-line"></div>
+
+<!-- ── CURSOR ── -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- ── NAV ── -->
+<nav>
+  <a class="nav-logo" href="#hero">GMC</a>
+  <ul class="nav-links">
+    <li><a href="#landmarks">Landmarks</a></li>
+    <li><a href="#zhabtog">Zhabtog</a></li>
+    <li><a href="#planners">Architects</a></li>
+    <li><a href="#vision">Vision</a></li>
+  </ul>
+</nav>
+
+<!-- ── PAGE ── -->
+<div class="page">
+
+  <!-- HERO -->
+  <section id="hero">
+    <!-- Animated Dharma Wheel SVG -->
+    <svg class="hero-emblem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="wheelGrad" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffcc33" stop-opacity="1"/>
+          <stop offset="100%" stop-color="#ff8800" stop-opacity="0.6"/>
+        </radialGradient>
+      </defs>
+      <g style="transform-origin:50px 50px; animation: spinSlow 30s linear infinite;" id="wheel-g">
+        <circle cx="50" cy="50" r="46" fill="none" stroke="url(#wheelGrad)" stroke-width="2" opacity="0.5"/>
+        <circle cx="50" cy="50" r="10" fill="url(#wheelGrad)" opacity="0.9"/>
+        <circle cx="50" cy="50" r="6" fill="#050a0f"/>
+        <!-- Spokes x8 -->
+        <g stroke="url(#wheelGrad)" stroke-width="2" opacity="0.85">
+          <line x1="50" y1="16" x2="50" y2="84"/>
+          <line x1="16" y1="50" x2="84" y2="50"/>
+          <line x1="26.9" y1="26.9" x2="73.1" y2="73.1"/>
+          <line x1="73.1" y1="26.9" x2="26.9" y2="73.1"/>
+        </g>
+        <!-- Hub ring -->
+        <circle cx="50" cy="50" r="18" fill="none" stroke="url(#wheelGrad)" stroke-width="1.5" opacity="0.5"/>
+        <circle cx="50" cy="50" r="34" fill="none" stroke="url(#wheelGrad)" stroke-width="1" opacity="0.3"/>
+      </g>
+      <style>#wheel-g{animation:spinSlow 30s linear infinite}@keyframes spinSlow{to{transform:rotate(360deg)}}</style>
+    </svg>
+
+    <p class="hero-eyebrow">Gelephu Mindfulness City &nbsp;·&nbsp; Kingdom of Bhutan</p>
+    <h1 class="hero-title">WELCOME<br>TO GMC</h1>
+    <p class="hero-sub">A Vision of <span>His Majesty the King of Bhutan</span><br>— Where Wisdom Meets the Future.</p>
+    <a href="#landmarks" class="hero-cta">Explore the City</a>
+
+    <div class="scroll-hint">
+      <span>Scroll</span>
+      <svg width="16" height="24" viewBox="0 0 16 24" fill="none">
+        <path d="M8 0v20M1 13l7 7 7-7" stroke="rgba(0,242,255,0.5)" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- LANDMARK CARDS -->
+  <section id="landmarks">
+    <div class="reveal">
+      <p class="section-label">// Infrastructure & Icons</p>
+      <h2 class="section-title">Pillars of the <span class="gold">Mindful City</span></h2>
+      <p class="section-desc">Four defining structures that anchor the spiritual, civic, and connective life of Gelephu Mindfulness City.</p>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- Card 1 -->
+      <div class="card reveal zoom-in reveal-delay-1">
+        <div class="card-img-wrap">
+          <img src="https://i.ibb.co/TDkQD3vV/choego-GMC-building.jpg" alt="ChoeGo GMC Building" loading="lazy"/>
+          <div class="card-img-overlay"></div>
+          <span class="card-badge">01 — Cultural</span>
+        </div>
+        <div class="card-body">
+          <div class="card-line"></div>
+          <h3 class="card-title">ChoeGo GMC</h3>
+          <p class="card-desc">The spiritual nucleus of GMC — a landmark blending traditional Bhutanese sacred architecture with the language of tomorrow's cities.</p>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card reveal zoom-in reveal-delay-2">
+        <div class="card-img-wrap">
+          <img src="https://i.ibb.co/nNCYXWJ6/Hospital-GMC.jpg" alt="GMC Hospital" loading="lazy"/>
+          <div class="card-img-overlay"></div>
+          <span class="card-badge">02 — Healthcare</span>
+        </div>
+        <div class="card-body">
+          <div class="card-line"></div>
+          <h3 class="card-title">GMC Hospital</h3>
+          <p class="card-desc">A world-class wellness and medical facility designed to integrate modern healthcare with the healing principles of mindfulness and traditional medicine.</p>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card reveal zoom-in reveal-delay-3">
+        <div class="card-img-wrap">
+          <img src="https://i.ibb.co/Jj07f1qH/airport.jpg" alt="International Airport" loading="lazy"/>
+          <div class="card-img-overlay"></div>
+          <span class="card-badge">03 — Connectivity</span>
+        </div>
+        <div class="card-body">
+          <div class="card-line"></div>
+          <h3 class="card-title">International Airport</h3>
+          <p class="card-desc">Gelephu's gateway to the world — an airport that opens Bhutan to global partnerships while remaining rooted in natural beauty and ecological mindfulness.</p>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="card reveal zoom-in reveal-delay-4">
+        <div class="card-img-wrap">
+          <img src="https://i.ibb.co/cXMZ73S3/108chorten.jpg" alt="108 Chorten Mission" loading="lazy"/>
+          <div class="card-img-overlay"></div>
+          <span class="card-badge">04 — Sacred</span>
+        </div>
+        <div class="card-body">
+          <div class="card-line"></div>
+          <h3 class="card-title">108 Chorten Mission</h3>
+          <p class="card-desc">One hundred and eight sacred chortens encircle the city — a living mandala of protection, blessings, and Himalayan Buddhist heritage for generations to come.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ZHABTOG -->
+  <section id="zhabtog">
+    <div class="zhabtog-grid">
+      <div class="zhabtog-text">
+        <div class="reveal slide-left">
+          <p class="section-label">// The Human Force</p>
+          <div class="big-number" aria-hidden="true">100K</div>
+          <h2 class="section-title" style="margin-top:0.6rem;">The Power of <span class="gold">Zhabtog</span></h2>
+          <p class="section-desc">Zhabtog — the Bhutanese tradition of voluntary service — is the beating heart of GMC's construction. Thousands of citizens gave their labor, sweat, and spirit to build something that will last centuries.</p>
+          <p class="section-desc" style="margin-top:-1rem;">"When a people build together, they build more than structures — they build a nation's soul."</p>
+        </div>
+      </div>
+      <div class="zhabtog-cards">
+        <div class="mini-card reveal slide-right reveal-delay-1">
+          <span class="mini-card-icon">🏔️</span>
+          <h3>Unity in Labor</h3>
+          <p>Citizens from all 20 dzongkhags contributed Zhabtog shifts — a modern expression of age-old collective spirit that has shaped Bhutan for centuries.</p>
+        </div>
+        <div class="mini-card reveal slide-right reveal-delay-2">
+          <span class="mini-card-icon">🌱</span>
+          <h3>Ecological Mindfulness</h3>
+          <p>Every volunteer effort was guided by GMC's core principle: zero compromise on nature. Over 60% of the city area remains forested and biodiverse.</p>
+        </div>
+        <div class="mini-card reveal slide-right reveal-delay-3">
+          <span class="mini-card-icon">⚡</span>
+          <h3>Youth Vanguard</h3>
+          <p>Bhutan's youth — from schools, colleges, and monasteries — led the Zhabtog brigades, planting the seeds of ownership in the city's foundation itself.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- PLANNERS / ARCHITECTS -->
+  <section id="planners">
+    <div class="reveal" style="text-align:center; margin-bottom:3rem;">
+      <p class="section-label">// Design & Masterplan</p>
+      <h2 class="section-title">The Master <span class="gold">Planners</span></h2>
+      <p class="section-desc" style="margin:0 auto;">The visionary architectural minds shaping GMC's physical reality — marrying Bhutanese identity with global best practice.</p>
+    </div>
+
+    <div class="planners-row">
+      <div class="planner-card reveal slide-left">
+        <div class="planner-icon">🏛️</div>
+        <h3>BIG Architects</h3>
+        <p>Bjarke Ingels Group — the world-renowned Danish firm known for projects like The LEGO House, 2 World Trade Center, and Vancouver's Telus Sky — was commissioned to master-plan GMC's urban fabric. Their human-scale, nature-integrated approach perfectly aligns with the mindfulness ethos of the city.</p>
+        <span class="planner-tag">MASTERPLAN LEAD</span>
+      </div>
+      <div class="planner-card reveal slide-right">
+        <div class="planner-icon">🌏</div>
+        <h3>Pelsung Architecture</h3>
+        <p>Pelsung brings the irreplaceable soul of Bhutanese architectural tradition into every structure. Their deep expertise in dzong-style sacred forms, timber joinery, and landscape integration ensures GMC is unmistakably and proudly Bhutanese — even as it reaches for the future.</p>
+        <span class="planner-tag">CULTURAL HERITAGE DESIGN</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- VISION QUOTE -->
+  <section id="vision">
+    <div class="quote-wrap reveal zoom-in">
+      <!-- SVG ornament -->
+      <svg class="ornament-svg" width="80" height="20" viewBox="0 0 80 20">
+        <line x1="0" y1="10" x2="28" y2="10" stroke="rgba(0,242,255,0.3)" stroke-width="1"/>
+        <circle cx="40" cy="10" r="4" fill="none" stroke="#ffcc33" stroke-width="1.5"/>
+        <line x1="52" y1="10" x2="80" y2="10" stroke="rgba(0,242,255,0.3)" stroke-width="1"/>
+      </svg>
+      <div class="quote-mark">"</div>
+      <blockquote>
+        Gelephu Mindfulness City is not just a city. It is a new way of thinking about prosperity — where happiness is the measure of progress, where nature is the greatest infrastructure, and where every stone laid is a prayer for future generations.
+        <cite>— H.M. Jigme Khesar Namgyel Wangchuck, King of Bhutan</cite>
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">GMC</div>
+    <div class="footer-credits">
+      Designed &amp; Authored by: <strong>Rio Packer Wangdi</strong><br/>
+      Student at <strong>Losel Gyatsho Academy (LGA)</strong>
+    </div>
+    <p class="footer-copy">© 2026 Gelephu Mindfulness City · Kingdom of Bhutan · All Rights Reserved</p>
+  </footer>
+
+</div><!-- end .page -->
+
+<script>
+// ── STAR FIELD ──
+(function(){
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let W, H, stars = [];
+  function resize(){
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  function mkStars(){
+    stars = [];
+    const n = Math.floor((W * H) / 4200);
+    for(let i=0;i<n;i++){
+      stars.push({
+        x: Math.random()*W,
+        y: Math.random()*H,
+        r: Math.random()*1.4+0.2,
+        a: Math.random(),
+        da: (Math.random()*0.004+0.001)*(Math.random()<0.5?1:-1)
+      });
+    }
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    stars.forEach(s=>{
+      s.a += s.da;
+      if(s.a>1||s.a<0.1) s.da *= -1;
+      ctx.beginPath();
+      ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle = `rgba(180,220,255,${s.a*0.7})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  resize(); mkStars(); draw();
+  window.addEventListener('resize',()=>{resize();mkStars();});
+})();
+
+// ── CUSTOM CURSOR ──
+(function(){
+  const dot = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+  document.addEventListener('mouseenter',()=>{dot.style.opacity='1';ring.style.opacity='1';});
+  document.addEventListener('mouseleave',()=>{dot.style.opacity='0';ring.style.opacity='0';});
+
+  // Hover enlarge on interactive elements
+  const hoverEls = document.querySelectorAll('a, button, .card, .mini-card, .planner-card');
+  hoverEls.forEach(el=>{
+    el.addEventListener('mouseenter',()=>{
+      dot.style.width='28px'; dot.style.height='28px';
+      ring.style.width='62px'; ring.style.height='62px';
+    });
+    el.addEventListener('mouseleave',()=>{
+      dot.style.width='18px'; dot.style.height='18px';
+      ring.style.width='42px'; ring.style.height='42px';
+    });
+  });
+
+  function animCursor(){
+    // Dot snaps
+    dot.style.left = mx + 'px';
+    dot.style.top  = my + 'px';
+    // Ring lags
+    rx += (mx - rx) * 0.14;
+    ry += (my - ry) * 0.14;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
+    requestAnimationFrame(animCursor);
+  }
+  animCursor();
+})();
+
+// ── SCROLL REVEAL ──
+(function(){
+  const items = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  },{threshold:0.12,rootMargin:'0px 0px -60px 0px'});
+  items.forEach(el=>observer.observe(el));
+})();
+
+// ── NAV SCROLL TINT ──
+(function(){
+  const nav = document.querySelector('nav');
+  window.addEventListener('scroll',()=>{
+    if(window.scrollY>60){
+      nav.style.background='rgba(5,10,15,0.95)';
+    } else {
+      nav.style.background='rgba(5,10,15,0.7)';
+    }
+  });
+})();
+
+// ── SMOOTH ACTIVE NAV LINK ──
+(function(){
+  const sections = document.querySelectorAll('section[id]');
+  const links = document.querySelectorAll('.nav-links a');
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.style.color='');
+        const active = document.querySelector(`.nav-links a[href="#${e.target.id}"]`);
+        if(active){ active.style.color='#00f2ff'; active.style.textShadow='0 0 12px rgba(0,242,255,0.5)'; }
+      }
+    });
+  },{threshold:0.4});
+  sections.forEach(s=>io.observe(s));
+})();
+</script>
+</body>
+</html>
